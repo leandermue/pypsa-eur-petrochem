@@ -538,6 +538,12 @@ plotting:
     methanol transport: '#FF7B00'
     shipping methanol: '#468c8b'
     industry methanol: '#468c8b'
+    # ethylene
+    ethylene production: "#e41a1c"
+    steam cracker: "#8c564b"        # brown-ish fossil
+    electric cracker: "#1f77b4"     # blue electric
+    ethylene: "#ff7f0e"
+    ethylene: "#e41a1c"
     # co2
     CC: '#f29dae'
     CCS: '#f29dae'

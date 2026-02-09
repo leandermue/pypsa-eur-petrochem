@@ -162,10 +162,19 @@ def separate_basic_chemicals(demand, production):
         }
     ).T
 
+    ethylene = pd.DataFrame(
+        {
+            "liquid": production["Ethylene"] *  (params["t_Naphtha_to_tEthylene"]*params["MWh_Naphtha_per_tNaphtha"]),
+            "electricity": production["Ethylene"] * params["MWh_elec_per_tEthylene"],
+            "gas": production["Ethylene"] * params["MWh_gas_per_tEthylene"],
+        }
+    ).T
+
     demand["Chlorine"] = chlorine.unstack().reindex(index=demand.index, fill_value=0.0)
     demand["Methanol"] = methanol.unstack().reindex(index=demand.index, fill_value=0.0)
+    demand["Ethylene"] = ethylene.unstack().reindex(index=demand.index, fill_value=0.0)
 
-    demand["HVC"] = demand["Basic chemicals"] - demand["Methanol"] - demand["Chlorine"]
+    demand["HVC"] = demand["Basic chemicals"] - demand["Methanol"] - demand["Chlorine"] - demand["Ethylene"]
 
     # Deal with ammonia separately, depending on whether it is modelled endogenously.
     ammonia_exo = pd.DataFrame(

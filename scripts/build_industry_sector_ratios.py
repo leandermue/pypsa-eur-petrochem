@@ -71,6 +71,7 @@ index = [
     "naphtha",
     "ammonia",
     "methanol",
+    "ethylene",
     "process emission",
     "process emission from feedstock",
 ]
@@ -446,6 +447,12 @@ def chemicals_industry():
     df.loc["methane", sector] -= methanol_total * params["MWh_CH4_per_tMeOH"] * 1e3
     df.loc["elec", sector] -= methanol_total * params["MWh_elec_per_tMeOH"] * 1e3
 
+    # subtract ethylene demand (in MtEthylene/a)
+    ethylene_total = params["ethylene_production_today"]  # in Mt/a
+    df.loc["naphtha", sector] -= ethylene_total * (params["t_Naphtha_to_tEthylene"]/params["MWh_Naphtha_per_tNaphtha"] * 1e3)
+    df.loc["elec", sector] -= ethylene_total * params["MWh_elec_per_tEthylene"] * 1e3
+    df.loc["methane", sector] -= ethylene_total * params["MWh_gas_per_tEthylene"] * 1e3
+
     # MWh/t material
     df.loc[sources, sector] = df.loc[sources, sector] / s_out
 
@@ -485,6 +492,18 @@ def chemicals_industry():
     sector = "Methanol"
     df[sector] = 0.0
     df.loc["methanol", sector] = params["MWh_MeOH_per_tMeOH"]
+
+    # Ethylene
+
+    sector = "Ethylene"
+    df[sector] = 0.0
+    df.loc["ethylene", sector] = params["MWh_Ethylene_per_tEthylene"]
+
+    #df.loc["naphtha", sector] = params["MWh_naphtha_per_tEthylene"]
+    #df.loc["elec", sector] = params["MWh_elec_per_tEthylene"]
+    #df.loc["methane", sector] = params["MWh_gas_per_tEthylene"]
+    #df.loc["process emission", sector] = 0.0  # or estimate if you have it
+    #df.loc["process emission from feedstock", sector] = 0.0  # optional if needed
 
     # Other chemicals
 

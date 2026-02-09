@@ -299,13 +299,42 @@ def separate_basic_chemicals(demand, year):
     col = "Basic chemicals"
     demand[col] = demand[col].clip(lower=0.0)
 
+    # ethylene data from 2018-2024
+    ethylene = pd.read_csv(snakemake.input.ethylene_production, index_col=0, sep=";")
+
+    there = ethylene.index.intersection(demand.index)
+    missing_ethylene = demand.index.symmetric_difference(there)
+
+    logger.info(f"Following countries have no ethylene demand: {missing_ethylene.tolist()}")
+
+    demand["Ethylene"] = 0.0
+
+    year_to_use = min(max(year, 2018), 2024)
+    if year_to_use != year:
+        logger.info(
+            f"Year {year} outside data range. Using data from {year_to_use} for ethylene production."
+        )
+    demand.loc[there, "Ethylene"] = ethylene.loc[there, str(year_to_use)]
+
+    demand["Basic chemicals"] -= demand["Ethylene"]
+
+    # EE, HR and LT got negative demand through subtraction - poor data
+    col = "Basic chemicals"
+    demand[col] = demand[col].clip(lower=0.0)
+
     # assume HVC, methanol, chlorine production proportional to non-ammonia basic chemicals
     distribution_key = (
         demand["Basic chemicals"]
         / params["basic_chemicals_without_NH3_production_today"]
         / 1e3
     )
-    demand["HVC"] = params["HVC_production_today"] * 1e3 * distribution_key
+
+    total_ethylene_today = ethylene.sum().sum() / 1e3  # from the DataFrame, in Mt
+    adjusted_hvc_today = params["HVC_production_today"] - total_ethylene_today/1000
+    demand["HVC"] = adjusted_hvc_today * 1e3 * distribution_key  # [kt]
+
+    #demand["HVC"] = params["HVC_production_today"] * 1e3 * distribution_key
+
     demand["Chlorine"] = params["chlorine_production_today"] * 1e3 * distribution_key
     demand["Methanol"] = params["methanol_production_today"] * 1e3 * distribution_key
 

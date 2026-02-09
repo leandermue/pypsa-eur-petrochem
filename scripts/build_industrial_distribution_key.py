@@ -172,6 +172,23 @@ def prepare_ammonia_database(regions):
 
     return gdf
 
+def prepare_steam_crackers(regions):
+    """
+    Load steam cracker plants and map onto bus regions.
+    """
+
+    df = pd.read_csv(snakemake.input.steam_crackers, sep=";", index_col=0)
+
+    geometry = gpd.points_from_xy(df.Longitude, df.Latitude)
+    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
+
+    gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
+
+    gdf.rename(columns={"name": "bus"}, inplace=True)
+    gdf["country"] = gdf.bus.str[:2]
+
+    return gdf
+
 
 def prepare_cement_supplement(regions):
     """
@@ -211,7 +228,7 @@ def prepare_refineries_supplement(regions):
 
 
 def build_nodal_distribution_key(
-    hotmaps, gem, ammonia, cement, refineries, regions, countries
+    hotmaps, gem, ammonia, steam_crackers, cement, refineries, regions, countries
 ):
     """
     Build nodal distribution keys for each sector.
@@ -368,6 +385,26 @@ def build_nodal_distribution_key(
 
         keys.loc[regions_ct, "Ammonia"] = key
 
+    # add ethylene from steam crackers
+    for country in countries:
+        regions_ct = regions.index[regions.index.str.contains(country)]
+
+        facilities = steam_crackers.query("country == @country")
+
+        if not facilities.empty:
+            production = facilities["Ethylene [kt/a]"]
+            if production.sum() == 0:
+                key = pd.Series(1 / len(facilities), facilities.index)
+            else:
+                # assume 50% of the minimum production for missing values
+                production = production.fillna(0.5 * facilities["Ethylene [kt/a]"].min())
+                key = production / production.sum()
+            key = key.groupby(facilities.bus).sum().reindex(regions_ct, fill_value=0.0)
+        else:
+            key = 0.0
+
+        keys.loc[regions_ct, "Ethylene"] = key
+
     return keys
 
 
@@ -392,12 +429,14 @@ if __name__ == "__main__":
 
     ammonia = prepare_ammonia_database(regions)
 
+    steam_crackers = prepare_steam_crackers(regions)
+
     cement = prepare_cement_supplement(regions)
 
     refineries = prepare_refineries_supplement(regions)
 
     keys = build_nodal_distribution_key(
-        hotmaps, gem, ammonia, cement, refineries, regions, countries
+        hotmaps, gem, ammonia, steam_crackers, cement, refineries, regions, countries
     )
 
     keys.to_csv(snakemake.output.industrial_distribution_key)

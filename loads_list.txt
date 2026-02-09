@@ -1,0 +1,160 @@
+BE0 0
+BE0 1
+BE0 2
+BE0 3
+BE0 4
+BE0 5
+BE0 6
+BE0 7
+BE0 8
+BE0 9
+BE0 0 land transport EV
+BE0 1 land transport EV
+BE0 2 land transport EV
+BE0 3 land transport EV
+BE0 4 land transport EV
+BE0 5 land transport EV
+BE0 6 land transport EV
+BE0 7 land transport EV
+BE0 8 land transport EV
+BE0 9 land transport EV
+EU land transport oil
+BE0 0 residential rural heat
+BE0 1 residential rural heat
+BE0 2 residential rural heat
+BE0 3 residential rural heat
+BE0 4 residential rural heat
+BE0 5 residential rural heat
+BE0 6 residential rural heat
+BE0 7 residential rural heat
+BE0 8 residential rural heat
+BE0 9 residential rural heat
+BE0 0 services rural heat
+BE0 1 services rural heat
+BE0 2 services rural heat
+BE0 3 services rural heat
+BE0 4 services rural heat
+BE0 5 services rural heat
+BE0 6 services rural heat
+BE0 7 services rural heat
+BE0 8 services rural heat
+BE0 9 services rural heat
+BE0 0 residential urban decentral heat
+BE0 1 residential urban decentral heat
+BE0 2 residential urban decentral heat
+BE0 3 residential urban decentral heat
+BE0 4 residential urban decentral heat
+BE0 5 residential urban decentral heat
+BE0 6 residential urban decentral heat
+BE0 7 residential urban decentral heat
+BE0 8 residential urban decentral heat
+BE0 9 residential urban decentral heat
+BE0 0 services urban decentral heat
+BE0 1 services urban decentral heat
+BE0 2 services urban decentral heat
+BE0 3 services urban decentral heat
+BE0 4 services urban decentral heat
+BE0 5 services urban decentral heat
+BE0 6 services urban decentral heat
+BE0 7 services urban decentral heat
+BE0 8 services urban decentral heat
+BE0 9 services urban decentral heat
+BE0 0 urban central heat
+BE0 1 urban central heat
+BE0 2 urban central heat
+BE0 3 urban central heat
+BE0 4 urban central heat
+BE0 5 urban central heat
+BE0 6 urban central heat
+BE0 7 urban central heat
+BE0 8 urban central heat
+BE0 9 urban central heat
+BE0 0 industry ethylene
+BE0 1 industry ethylene
+BE0 2 industry ethylene
+BE0 3 industry ethylene
+BE0 4 industry ethylene
+BE0 5 industry ethylene
+BE0 6 industry ethylene
+BE0 7 industry ethylene
+BE0 8 industry ethylene
+BE0 9 industry ethylene
+solid biomass for industry
+BE0 0 gas for industry
+BE0 1 gas for industry
+BE0 2 gas for industry
+BE0 3 gas for industry
+BE0 4 gas for industry
+BE0 5 gas for industry
+BE0 6 gas for industry
+BE0 7 gas for industry
+BE0 8 gas for industry
+BE0 9 gas for industry
+BE0 0 H2 for industry
+BE0 1 H2 for industry
+BE0 2 H2 for industry
+BE0 3 H2 for industry
+BE0 4 H2 for industry
+BE0 5 H2 for industry
+BE0 6 H2 for industry
+BE0 7 H2 for industry
+BE0 8 H2 for industry
+BE0 9 H2 for industry
+EU industry methanol
+EU naphtha for industry
+BE0 0 low-temperature heat for industry
+BE0 1 low-temperature heat for industry
+BE0 2 low-temperature heat for industry
+BE0 3 low-temperature heat for industry
+BE0 4 low-temperature heat for industry
+BE0 5 low-temperature heat for industry
+BE0 6 low-temperature heat for industry
+BE0 7 low-temperature heat for industry
+BE0 8 low-temperature heat for industry
+BE0 9 low-temperature heat for industry
+BE0 0 industry electricity
+BE0 1 industry electricity
+BE0 2 industry electricity
+BE0 3 industry electricity
+BE0 4 industry electricity
+BE0 5 industry electricity
+BE0 6 industry electricity
+BE0 7 industry electricity
+BE0 8 industry electricity
+BE0 9 industry electricity
+process emissions
+EU coal for industry
+EU shipping methanol
+EU shipping oil
+EU kerosene for aviation
+BE0 0 agriculture electricity
+BE0 1 agriculture electricity
+BE0 2 agriculture electricity
+BE0 3 agriculture electricity
+BE0 4 agriculture electricity
+BE0 5 agriculture electricity
+BE0 6 agriculture electricity
+BE0 7 agriculture electricity
+BE0 8 agriculture electricity
+BE0 9 agriculture electricity
+BE0 0 agriculture heat
+BE0 1 agriculture heat
+BE0 2 agriculture heat
+BE0 3 agriculture heat
+BE0 4 agriculture heat
+BE0 5 agriculture heat
+BE0 6 agriculture heat
+BE0 7 agriculture heat
+BE0 8 agriculture heat
+BE0 9 agriculture heat
+BE0 0 agriculture machinery electric
+BE0 1 agriculture machinery electric
+BE0 2 agriculture machinery electric
+BE0 3 agriculture machinery electric
+BE0 4 agriculture machinery electric
+BE0 5 agriculture machinery electric
+BE0 6 agriculture machinery electric
+BE0 7 agriculture machinery electric
+BE0 8 agriculture machinery electric
+BE0 9 agriculture machinery electric
+EU agriculture machinery oil

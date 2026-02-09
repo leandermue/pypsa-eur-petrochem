@@ -27,6 +27,15 @@ The fraction of high value chemicals that are coming from mechanical recycling.
 **HVC_chemical_recycling_fraction**
 The fraction of high value chemicals that are coming from chemical recycling.
 
+**Ethylene_primary_fraction**
+The fraction of ethylene that is coming from primary production (crude oil or Fischer Tropsch).
+
+**Ethylene_mechanical_recycling_fraction**
+The fraction of ethylene that is coming from mechanical recycling.
+
+**Ethylene_chemical_recycling_fraction**
+The fraction of ethylene that is coming from chemical recycling.
+
 If not already present, the information is added as new column in the output file.
 
 The unit of the production is kt/a.
@@ -103,6 +112,18 @@ if __name__ == "__main__":
     )
 
     production["HVC"] *= get(params["HVC_primary_fraction"], investment_year)
+
+
+    production["Ethylene (mechanical recycling)"] = (
+            get(params["HVC_mechanical_recycling_fraction"], investment_year)
+            * production["Ethylene"]
+    )
+    production["Ethylene (chemical recycling)"] = (
+            get(params["HVC_chemical_recycling_fraction"], investment_year)
+            * production["Ethylene"]
+    )
+
+    production["Ethylene"] *= get(params["HVC_primary_fraction"], investment_year)
 
     fn = snakemake.output.industrial_production_per_country_tomorrow
     production.to_csv(fn, float_format="%.2f")

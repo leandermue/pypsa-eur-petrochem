@@ -5,7 +5,7 @@
 tutorial: true
 
 run:
-  name: "test-sector-myopic"
+  name: "test-sector-myopic-v2"
   disable_progressbar: true
   shared_resources:
     policy: false

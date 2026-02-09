@@ -31,6 +31,7 @@ sector_mapping = {
     "HVC": "Chemical industry",
     "HVC (mechanical recycling)": "Chemical industry",
     "HVC (chemical recycling)": "Chemical industry",
+    "Ethylene": "Ethylene",
     "Methanol": "Chemical industry",
     "Chlorine": "Chemical industry",
     "Other chemicals": "Chemical industry",

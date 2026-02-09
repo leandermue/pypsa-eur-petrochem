@@ -993,6 +993,7 @@ rule build_industrial_production_per_country:
     input:
         ch_industrial_production="data/ch_industrial_production_per_subsector.csv",
         ammonia_production=resources("ammonia_production.csv"),
+        ethylene_production="data/Ethylene production.csv",
         eurostat=rules.retrieve_eurostat_balances.output["directory"],
         jrc=rules.retrieve_jrc_idees.output["directory"],
     output:
@@ -1048,6 +1049,7 @@ rule build_industrial_distribution_key:
         hotmaps=rules.retrieve_hotmaps_industrial_sites.output["csv"],
         gem_gspt=rules.retrieve_gem_steel_plant_tracker.output["xlsx"],
         ammonia="data/ammonia_plants.csv",
+        steam_crackers="data/steam_crackers.csv",
         cement_supplement="data/cement-plants-noneu.csv",
         refineries_supplement="data/refineries-noneu.csv",
     output:
@@ -1603,6 +1605,9 @@ rule prepare_sector_network:
             if config_provider("sector", "district_heating", "ates", "enable")(w)
             else []
         ),
+        steam_crackers="data/steam_crackers.csv",
+        regions_onshore=resources("regions_onshore_base_s_{clusters}.geojson"),
+
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"

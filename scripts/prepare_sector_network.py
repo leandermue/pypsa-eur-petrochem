@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import pypsa
 import xarray as xr
+import geopandas as gpd
 from networkx.algorithms import complement
 from networkx.algorithms.connectivity.edge_augmentation import k_edge_augmentation
 from pypsa.geo import haversine_pts
@@ -145,6 +146,13 @@ def define_spatial(nodes, options):
             spatial.ammonia.locations = ["EU"]
 
         spatial.ammonia.df = pd.DataFrame(vars(spatial.ammonia), index=nodes)
+
+
+    # ethylene
+    spatial.ethylene = SimpleNamespace()
+    spatial.ethylene.nodes = nodes + " ethylene"
+    spatial.ethylene.locations = nodes
+    spatial.ethylene.df = pd.DataFrame(vars(spatial.ethylene), index=nodes)
 
     # hydrogen
     spatial.h2 = SimpleNamespace()
@@ -4488,6 +4496,23 @@ def add_biomass(
             lifetime=25,  # TODO: add value to technology-data
         )
 
+def prepare_steam_crackers(regions):
+    """
+    Load steam cracker plants and map onto bus regions.
+    """
+
+    df = pd.read_csv(snakemake.input.steam_crackers, sep=";", index_col=0)
+
+    geometry = gpd.points_from_xy(df.Longitude, df.Latitude)
+    gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
+
+    gdf = gpd.sjoin(gdf, regions, how="inner", predicate="within")
+
+    gdf.rename(columns={"name": "bus"}, inplace=True)
+    gdf["country"] = gdf.bus.str[:2]
+
+    return gdf
+
 
 def add_industry(
     n: pypsa.Network,
@@ -5129,6 +5154,135 @@ def add_industry(
             carrier="coal for industry",
             p_nom_extendable=True,
             efficiency2=costs.at["coal", "CO2 intensity"],
+        )
+
+        # 1. Add ethylene industry demand buses and load to the network
+        logger.info("Adding ethylene industry demand.")
+
+        # Create buses for the ethylene industry in the EU
+        n.add("Bus", spatial.ethylene.nodes, location=spatial.ethylene.locations, carrier="ethylene", unit="t")
+
+        """n.add(
+            "Bus",
+            "EU ethylene",
+            location="EU",
+            carrier="ethylene",
+            unit="t",
+        )"""
+
+        # Create a load for the ethylene industry demand
+        # Assuming `industrial_demand` is your DataFrame with demand data
+
+        p_set_ethylene = (
+                industrial_demand.loc[spatial.ethylene.locations, "ethylene"]
+                .rename(index=lambda x: x + " ethylene")
+                / nhours
+        )
+
+        n.add(
+            "Load",
+            spatial.ethylene.nodes,
+            bus=spatial.ethylene.nodes,
+            carrier="ethylene",
+            p_set=p_set_ethylene,
+        )
+
+
+        """p_set_ethylene = industrial_demand["ethylene"].sum() / nhours  # Convert to hourly demand
+
+        print(p_set_ethylene)
+
+        n.add(
+            "Load",
+            "EU ethylene",
+            bus="EU ethylene",
+            carrier="ethylene",
+            p_set=p_set_ethylene,
+        )"""
+
+        regions = gpd.read_file(snakemake.input.regions_onshore).set_index("name")
+
+        crackers = prepare_steam_crackers(regions)
+
+        HHV_Ethylene = snakemake.params["industry"]["MWh_Ethylene_per_tEthylene"]
+        HHV_Naphtha = snakemake.params["industry"]["MWh_Naphtha_per_tNaphtha"]
+
+        crackers["p_nom_t_per_h"] = (crackers["Name plate capacity [kt/a]"] * 1e3 * snakemake.params["industry"]["t_Naphtha_to_tEthylene"] * HHV_Naphtha)/8760
+
+        # 2. Add steam cracker link (ethylene production from naphtha)
+        logger.info("Adding steam cracker link for ethylene production.")
+
+        # Define the capacity of the steam cracker (assume some value or calculate based on demand)
+        # p_nom_ethylene = industrial_demand["ethylene"].sum() / nhours  # Adjust as per demand
+
+
+        naphtha_input = snakemake.params["industry"]["t_Naphtha_to_tEthylene"]*(HHV_Naphtha / HHV_Ethylene)  # MWh/MWh
+        gas_input = snakemake.params["industry"]["MWh_gas_per_tEthylene"]/snakemake.params["industry"]["MWh_Ethylene_per_tEthylene"]
+        elec_input = snakemake.params["industry"]["MWh_elec_per_tEthylene"]/snakemake.params["industry"]["MWh_Ethylene_per_tEthylene"]
+
+        for plant, row in crackers.iterrows():
+            n.add(
+                "Link",
+                f"{plant} steam cracker",
+                carrier="steam cracker",
+
+                bus0=f"EU naphtha for industry",
+                bus1=f"{row.bus} ethylene",
+                bus2=f"{row.bus} gas",
+                bus3=row.bus,  # electricity bus
+
+                p_nom=row.p_nom_t_per_h,
+                p_nom_extendable=False,  # existing asset
+                capital_cost=0.0,  # sunk
+                marginal_cost=23.58,  # O&M + feedstock handling
+
+                efficiency=1 / naphtha_input,
+                efficiency2=-gas_input * (1 / naphtha_input),
+                efficiency3=-elec_input * (1 / naphtha_input),
+            )
+
+        logger.info("Adding electric crackers at existing cracker sites.")
+
+        ELEC_MWH_PER_T = 4.4 # MWh electric per t ethylene
+
+        elec_input_ecrack = ELEC_MWH_PER_T/snakemake.params["industry"]["MWh_Ethylene_per_tEthylene"]
+
+
+        ELECTRIC_CRACKER_CAPEX =  3349 # €/t/a
+        ELECTRIC_CRACKER_VOM = 25  # €/t ethylene
+
+        for bus in crackers.bus.unique():
+            n.add(
+                "Link",
+                f"{bus} electric cracker",
+                carrier="electric cracker",
+
+                bus0=f"EU naphtha for industry",
+                bus1=f"{bus} ethylene",
+                bus2=bus,  # electricity bus
+
+                p_nom_extendable=True,
+                p_nom_max=crackers.groupby("bus")["p_nom_t_per_h"].sum().loc[bus],
+                capital_cost=ELECTRIC_CRACKER_CAPEX / ELEC_MWH_PER_T,  # €/MWh ethylene/a
+                marginal_cost=ELECTRIC_CRACKER_VOM,
+                efficiency=1 / naphtha_input,
+                efficiency2=-elec_input_ecrack * (1 / naphtha_input),
+            )
+
+        # 3. Add storage for ethylene
+        logger.info("Adding ethylene storage.")
+
+        n.add(
+            "Store",
+            spatial.ethylene.nodes,
+            suffix=" store",
+            bus=spatial.ethylene.nodes,
+            carrier="ethylene",
+            e_nom_extendable=True,
+            e_nom_max=0.1 * industrial_demand.loc[spatial.ethylene.locations, "ethylene"].rename(
+                index=lambda x: x + " ethylene"),
+            capital_cost=100000,
+            e_cyclic=True,
         )
 
 
